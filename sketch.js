@@ -12,6 +12,7 @@ function preload() {
 }
 function setup() {
     createCanvas(windowWidth, windowHeight)
+    fondo.resize(width, height);
     escena1 = createSprite(width * 0.5, height / 2, width, height);
     escena2 = createSprite(width * 1.5, height / 2, width, height);
     escena1.addImage(fondo);
@@ -32,30 +33,34 @@ function setup() {
 }
 function draw() {
     drawSprites()
-    bob.velocityY = 5;
     bob.collide(suelo, dejardesaltar);
     bob.collide(bordes);
+    bob.velocityY = 5;
     if (keyDown(LEFT_ARROW)) {
         bob.x = bob.x - 5;
-        bob.changeAnimation("correr");
-        bob.mirrorX(-1);
+        if (!bob.saltando) {
+            bob.changeAnimation("correr");
+            bob.mirrorX(-1);
+        }
     }
     if (keyDown(RIGHT_ARROW)) {
-        if (game_status == 1 && bob.x > width * 5.5) {
+        if (game_status == 1 && bob.x > width * 0.55) {
             moverEscena(escena1)
             moverEscena(escena2)
         } else {
             bob.x = bob.x + 5.5;
         }
-        bob.changeAnimation("correr");
-        bob.mirrorX(1);
+        if (!bob.saltando) {
+            bob.changeAnimation("correr");
+            bob.mirrorX(1);
+        }
     }
     if (keyWentDown(32) && !bob.saltando) {
         bob.changeAnimation("saltar");
         bob.velocityY = -100
         bob.saltando = true;
     }
-    if (!keyDown(LEFT_ARROW) && !keyDown(RIGHT_ARROW)) {
+    if (!keyDown(LEFT_ARROW) && !keyDown(RIGHT_ARROW) && !bob.saltando) {
         bob.changeAnimation("quieto");
         escena1.velocityX = 0;
         escena2.velocityX = 0;
