@@ -9,7 +9,7 @@ function preload() {
     bob_quieto = loadAnimation("./sprites/sprite_00.png", "./sprites/sprite_01.png", "./sprites/sprite_02.png", "./sprites/sprite_03.png", "./sprites/sprite_04.png", "./sprites/sprite_05.png");
     bob_corre = loadAnimation("./sprites/sprite_18.png", "./sprites/sprite_19.png")
     bob_salta = loadAnimation("./sprites/BOB saltando 0.png", "./sprites/BOB saltando 1.png", "sprites/BOB saltando 2.png", "./sprites/BOB saltando 3.png", "./sprites/BOB saltando 4.png")
-    bob_atacando = loadAnimation("./sprites/BOB ATACANDO00.png", "./sprites/BOB ATACANDO01.png", "./sprites/BOB ATACANDO02.png", "./sprites/BOB ATACANDO03.png", "./sprites/BOB ATACANDO04.png", "./sprites/BOB ATACANDO05.png", "./sprites/BOB ATACANDO05.png", "./sprites/BOB ATACANDO06.png", "./sprites/BOB ATACANDO06.png", "./sprites/BOB ATACANDO06.png", "./sprites/BOB ATACANDO06.png", "./sprites/BOB ATACANDO07.png", "./sprites/BOB ATACANDO08.png", "./sprites/BOB ATACANDO08.png", "./sprites/BOB ATACANDO08.png", "./sprites/BOB ATACANDO09.png", "./sprites/BOB ATACANDO10.png", "./sprites/BOB ATACANDO11.png", "./sprites/BOB ATACANDO12.png");
+    //bob_atacando = loadAnimation("./sprites/BOB ATACANDO00.png", "./sprites/BOB ATACANDO01.png", "./sprites/BOB ATACANDO02.png", "./sprites/BOB ATACANDO03.png", "./sprites/BOB ATACANDO04.png", "./sprites/BOB ATACANDO05.png", "./sprites/BOB ATACANDO05.png", "./sprites/BOB ATACANDO06.png", "./sprites/BOB ATACANDO06.png", "./sprites/BOB ATACANDO06.png", "./sprites/BOB ATACANDO06.png", "./sprites/BOB ATACANDO07.png", "./sprites/BOB ATACANDO08.png", "./sprites/BOB ATACANDO08.png", "./sprites/BOB ATACANDO08.png", "./sprites/BOB ATACANDO09.png", "./sprites/BOB ATACANDO10.png", "./sprites/BOB ATACANDO11.png", "./sprites/BOB ATACANDO12.png");
     bob_gameover = loadAnimation("./sprites/game oVer00.png","./sprites/game oVer01.png","./sprites/game oVer02.png","./sprites/game oVer03.png","./sprites/game oVer04.png","./sprites/game oVer05.png","./sprites/game oVer06.png","./sprites/game oVer07.png","./sprites/game oVer08.png","./sprites/game oVer09.png","./sprites/game oVer10.png","./sprites/game oVer11.png");
     fondo = loadImage("backgroundforest.jpg");
     arbustosImg = loadImage("./sprites/backgroundarbustos.png");
@@ -43,7 +43,7 @@ function setup() {
     bob.addAnimation("correr", bob_corre);
     bob.addAnimation("quieto", bob_quieto);
     bob.addAnimation("saltar", bob_salta);
-    bob.addAnimation("atacar", bob_atacando);
+    //bob.addAnimation("atacar", bob_atacando);
     bob.addAnimation("gameover", bob_gameover);
     arbustosImg.resize(width, height);
     escena1_a = createSprite(width * 0.5, height / 2, width, height);
@@ -63,7 +63,9 @@ function setup() {
     }
     islas_grupo = new Group()
     for (let num_islas = 0; num_islas <= 4; num_islas++) {
-        plataforma = createSprite(random(0, width*2), random(height*0.5, height*0.75))
+        xrandom = random(width, width*2)
+        plataforma = createSprite(xrandom, random(height*0.5, height*0.75))
+        plataforma.distancia = escena2.x - xrandom;
         plataforma.addAnimation("isla", islas_img)
         plataforma.debug = 0
         plataforma.depth = 6
@@ -126,6 +128,7 @@ function draw() {
         bob.saltando = false;
 
     }
+    moverIslas()
 }
 function moverEscena(imagen) {
     imagen.velocityX = -5;
@@ -140,6 +143,11 @@ function moverEscena(imagen) {
             }
         });
     }
+}
+function moverIslas(){
+    islas_grupo.forEach(isla => {
+        isla.x = escena2.x - isla.distancia
+    })
 }
 function perderVida() {
 corazones=corazones-0.5
