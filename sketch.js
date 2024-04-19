@@ -2,7 +2,7 @@
 var vida = 1;
 var balas = 0;
 var game_status = 0;
-var enemigos_lista = ["geometry_rob", "calcuROB"];
+var enemigos_lista = ["geometry_rob", "calcuROB", "avion_rob"];
 var corazones = 3;
 function preload() {
     bob_caminando = loadAnimation("./sprites/sprite_00.png", "./sprites/sprite_01.png", "./sprites/sprite_02.png", "./sprites/sprite_03.png", "./sprites/sprite_04.png", "./sprites/sprite_05.png", "./sprites/sprite_06.png", "./sprites/sprite_07.png", "./sprites/sprite_08.png", "./sprites/sprite_09.png", "./sprites/sprite_10.png", "./sprites/sprite_11.png", "./sprites/sprite_12.png", "./sprites/sprite_13.png", "./sprites/sprite_14.png", "./sprites/sprite_15.png", "./sprites/sprite_16.png", "./sprites/sprite_17.png", "./sprites/sprite_18.png", "./sprites/sprite_19.png");
@@ -21,6 +21,7 @@ function preload() {
     calcuROB_IMG = loadAnimation("./sprites/calcuROB0.png", "./sprites/calcuROB1.png");
     islas_img = loadAnimation("./sprites/isla-1.png", "./sprites/isla-1copia.png")
     corazon_img = loadAnimation("./sprites/corazon0.png", "./sprites/corazon1.png");
+    curacion_img = loadAnimation("./sprites/curacion_un_corazon.png");
     islas_img = loadAnimation("./sprites/isla-1.png", "./sprites/isla-1copia.png");
     btnStartImg = loadImage("./sprites/btnStart.png");
     btnSkinsImg = loadImage("./sprites/btnSkins.png");
@@ -62,6 +63,7 @@ function setup() {
         crearCorazon(i)
     }
     islas_grupo = new Group()
+    curacionrandom = Math.round(random(0,3))
     for (let num_islas = 0; num_islas <= 4; num_islas++) {
         xrandom = random(width, width*2)
         plataforma = createSprite(xrandom, random(height*0.5, height*0.75))
@@ -71,6 +73,10 @@ function setup() {
         plataforma.depth = 6
         plataforma.setCollider("rectangle", 0,30,100,30)
         islas_grupo.add(plataforma)
+        if(num_islas == curacionrandom){
+            curacion = createSprite(plataforma.x,plataforma.y-20)
+            curacion.addImage(curacion_img)
+        }
     }
 }
 function draw() {
@@ -218,6 +224,7 @@ function createEnemies() {
         enemigo.depth = 7
         tipo = random(enemigos_lista)
         enemigo.scale = 2
+        enemigo.velocityX = random(-5, -10);
         switch (tipo) {
             case "geometry_rob":
                 enemigo.addAnimation("caminar", geometry_rob_img)
@@ -229,11 +236,19 @@ function createEnemies() {
             case "calcuROB":
                 enemigo.addAnimation("caminar", calcuROB_IMG)
                 break;
-
+            case "avion_rob":
+                enemigo.addAnimation("caminar", avion_img)
+                enemigo.y = random(height*0.4, height*0.52)
+                enemigo.velocityX = random(-10, 10);
+                if(enemigo.velocityX > 0){
+                    enemigo.x = 0
+                    enemigo.mirrorX(-1)
+                }
+                break;
+    
             default:
                 break;
         }
-        enemigo.velocityX = random(-5, -10);
         enemigos_grupo.add(enemigo)
     }
 }
