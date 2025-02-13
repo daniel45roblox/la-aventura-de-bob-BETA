@@ -4,6 +4,7 @@ var balas = 0;
 var game_status = 0;
 var enemigos_lista = ["geometry_rob", "calcuROB", "avion_rob"];
 var corazones = 3;
+var velocidades_avion = [-10, -7, -5, -3, 4, 6, 8, 10, 12]
 function preload() {
     bob_caminando = loadAnimation("./sprites/sprite_00.png", "./sprites/sprite_01.png", "./sprites/sprite_02.png", "./sprites/sprite_03.png", "./sprites/sprite_04.png", "./sprites/sprite_05.png", "./sprites/sprite_06.png", "./sprites/sprite_07.png", "./sprites/sprite_08.png", "./sprites/sprite_09.png", "./sprites/sprite_10.png", "./sprites/sprite_11.png", "./sprites/sprite_12.png", "./sprites/sprite_13.png", "./sprites/sprite_14.png", "./sprites/sprite_15.png", "./sprites/sprite_16.png", "./sprites/sprite_17.png", "./sprites/sprite_18.png", "./sprites/sprite_19.png");
     bob_quieto = loadAnimation("./sprites/sprite_00.png", "./sprites/sprite_01.png", "./sprites/sprite_02.png", "./sprites/sprite_03.png", "./sprites/sprite_04.png", "./sprites/sprite_05.png");
@@ -17,6 +18,7 @@ function preload() {
     bosstierra_paracaidas = loadAnimation("./sprites/boss de tierra 3.00.png", "./sprites/boss de tierra 3.01.png", "./sprites/boss de tierra 3.02.png", "./sprites/boss de tierra 3.03.png", "./sprites/boss de tierra 3.04.png", "./sprites/boss de tierra 3.05.png", "./sprites/boss de tierra 3.06.png")
     geometry_rob_img = loadAnimation("./sprites/geometry_rob.png");
     avion_img = loadAnimation("./sprites/avion0.png","./sprites/avion1.png","./sprites/avion2.png","./sprites/avion3.png");
+    avion_explosion_img = loadAnimation("./sprites/avion4.png","./sprites/avion5.png");
     rob_morir_img = loadAnimation("./sprites/muerte de un enemigo0.png", "./sprites/muerte de un enemigo1.png");
     calcuROB_IMG = loadAnimation("./sprites/calcuROB0.png", "./sprites/calcuROB1.png");
     islas_img = loadAnimation("./sprites/isla-1.png", "./sprites/isla-1copia.png")
@@ -26,6 +28,7 @@ function preload() {
     btnStartImg = loadImage("./sprites/btnStart.png");
     btnSkinsImg = loadImage("./sprites/btnSkins.png");
     btnSponsorImg = loadImage("./sprites/btnSponsor.png");
+    musica=loadSound("musica.mp3")
 
 }
 function setup() {
@@ -63,7 +66,7 @@ function setup() {
         crearCorazon(i)
     }
     islas_grupo = new Group()
-    curacionrandom = Math.round(random(0,3))
+    //curacionrandom = Math.round(random(0,3))
     for (let num_islas = 0; num_islas <= 4; num_islas++) {
         xrandom = random(width, width*2)
         plataforma = createSprite(xrandom, random(height*0.5, height*0.75))
@@ -73,20 +76,26 @@ function setup() {
         plataforma.depth = 6
         plataforma.setCollider("rectangle", 0,30,100,30)
         islas_grupo.add(plataforma)
-        if(num_islas == curacionrandom){
+ /*       if(num_islas == curacionrandom){
             curacion = createSprite(plataforma.x,plataforma.y-20)
             curacion.addImage(curacion_img)
-        }
+        }*/
     }
 }
 function draw() {
+    if(game_status == 1 && !musica.isPlaying()){
+        musica.play()
+        musica.setVolume(0.8)
+    }
     drawSprites()
     createEnemies()
+    enemigos_grupo.collide(suelo, explotar);
     bob.collide(suelo, dejardesaltar);
     bob.collide(bordes);
     bob.overlap(enemigos_grupo, destruir);
     bob.collide(islas_grupo, dejardesaltar);
     bob.overlap(btnStart, start);
+    bob.overlap(btnSponsor, mostrarSponsors);
     bob.velocityY = 5;
     if (keyDown(LEFT_ARROW)) {
         bob.x = bob.x - 5;
@@ -102,10 +111,18 @@ function draw() {
             moverEscena(escena1_a)
             moverEscena(escena2_a)
             //moverEscena(islas_grupo)
-            enemigos_grupo.setVelocityXEach(random(-10, -15));
+            enemigos_grupo.forEach(enemigo => {
+                if(!enemigo.tipo == "avion_rob" && enemigo.velocityX < 0){
+                    enemigo.velocityX = random(-10, -15)
+                }
+            });
         } else {
             bob.x = bob.x + 5.5;
-            enemigos_grupo.setVelocityXEach(random(-5, -10));
+            enemigos_grupo.forEach(enemigo => {
+                if(!enemigo.tipo == "avion_rob" && enemigo.velocityX < 0){
+                    enemigo.velocityX = random(-5, -10)
+                }
+            });
         }
         if (!bob.saltando) {
             bob.changeAnimation("correr");
@@ -135,6 +152,7 @@ function draw() {
 
     }
     moverIslas()
+    aterrizar()
 }
 function moverEscena(imagen) {
     imagen.velocityX = -5;
@@ -174,11 +192,9 @@ function crearMenuPrincipal() {
     menu.center()
     menu.id("menu");
     title = createImg("./sprites/title.png");
-    btnStart = createSprite(width * 0.3, height * 0.55);
+    btnStart = createSprite(width * 0.3, height * 0.80 - 150);
     btnStart.addImage(btnStartImg)
-    btnSkins = createSprite(width * 0.5, height * 0.55);
-    btnSkins.addImage(btnSkinsImg)
-    btnSponsor = createSprite(width * 0.7, height * 0.55);
+    btnSponsor = createSprite(width * 0.7, height * 0.8 - 150);
     btnSponsor.addImage(btnSponsorImg)
     title.parent("menu");
 }
@@ -186,8 +202,11 @@ function start() {
     menu.hide();
     btnStart.destroy()
     btnSponsor.destroy()
-    btnSkins.destroy()
     game_status = 1;
+}
+function mostrarSponsors() {
+    menu.hide();
+    document.getElementById("info").style.display = "block"
 }
 function crearBoss(tipo) {
     switch (tipo) {
@@ -225,6 +244,7 @@ function createEnemies() {
         tipo = random(enemigos_lista)
         enemigo.scale = 2
         enemigo.velocityX = random(-5, -10);
+        enemigo.tipo = tipo
         switch (tipo) {
             case "geometry_rob":
                 enemigo.addAnimation("caminar", geometry_rob_img)
@@ -238,8 +258,13 @@ function createEnemies() {
                 break;
             case "avion_rob":
                 enemigo.addAnimation("caminar", avion_img)
+                enemigo.addAnimation("explotar", avion_explosion_img)
                 enemigo.y = random(height*0.4, height*0.52)
-                enemigo.velocityX = random(-10, 10);
+                enemigo.scale = 0.6
+                enemigo.scale = 0.5
+                enemigo.tiempo = 0
+                enemigo.aterrizando = false
+                enemigo.velocityX = random(velocidades_avion);
                 if(enemigo.velocityX > 0){
                     enemigo.x = 0
                     enemigo.mirrorX(-1)
@@ -253,10 +278,35 @@ function createEnemies() {
     }
 }
 function destruir(bob, enemigo) {
-    if (bob.getAnimationLabel() != "quieto") {
+    if(enemigo.tipo == "avion_rob"){
+        perderVida()
+        explotar(enemigo, bob)
+    }
+    else if (bob.getAnimationLabel() != "quieto") {
         enemigo.destroy()
     }else{
         perderVida()
         enemigo.destroy()
     }
+}
+function aterrizar() {
+    enemigos_grupo.forEach(enemigo => {
+        if(enemigo.tipo == "avion_rob"){
+            enemigo.tiempo = enemigo.tiempo + 1
+            if (!enemigo.aterrizando && enemigo.tiempo >= 130) {
+                enemigo.velocityY = random(2,10)
+                enemigo.aterrizando = true
+            }
+        }
+    });
+}
+function explotar(enemigo, suelo) {
+    enemigo.changeAnimation("explotar")
+    enemigo.velocityX = 0
+    enemigo.lifetime = 40
+    enemigo.depth = 10
+}
+function cerrarCreditos() {
+    menu.show();
+    document.getElementById("info").style.display = "none"
 }

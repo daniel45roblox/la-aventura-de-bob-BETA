@@ -9,3 +9,14 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
 }
+#cerrar{
+    background-color: red;
+    width: 80px;
+    height: 80px;
+    border-radius: 40px;
+    color: white;
+    font-size: 25px;
+    position: absolute;
+    top:50px;
+    right: 80px;
+}
