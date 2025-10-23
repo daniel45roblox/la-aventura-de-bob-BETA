@@ -7,6 +7,9 @@ var corazones = 3;
 var velocidades_avion = [-10, -7, -5, -3, 4, 6, 8, 10, 12]
 var noMusic = false;
 var perdiste = false;
+var fondos = [];
+var arbustos = [];
+var scrollSpeed = 5;
 function preload() {
     bob_caminando = loadAnimation("./sprites/sprite_00.png", "./sprites/sprite_01.png", "./sprites/sprite_02.png", "./sprites/sprite_03.png", "./sprites/sprite_04.png", "./sprites/sprite_05.png", "./sprites/sprite_06.png", "./sprites/sprite_07.png", "./sprites/sprite_08.png", "./sprites/sprite_09.png", "./sprites/sprite_10.png", "./sprites/sprite_11.png", "./sprites/sprite_12.png", "./sprites/sprite_13.png", "./sprites/sprite_14.png", "./sprites/sprite_15.png", "./sprites/sprite_16.png", "./sprites/sprite_17.png", "./sprites/sprite_18.png", "./sprites/sprite_19.png");
     bob_quieto = loadAnimation("./sprites/sprite_00.png", "./sprites/sprite_01.png", "./sprites/sprite_02.png", "./sprites/sprite_03.png", "./sprites/sprite_04.png", "./sprites/sprite_05.png");
@@ -36,11 +39,26 @@ function preload() {
 function setup() {
     createCanvas(windowWidth, windowHeight)
     fondo.resize(width, height);
-    escena1 = createSprite(width * 0.5, height / 2, width, height);
-    escena2 = createSprite(width * 1.5, height / 2, width, height);
-    escena1.addImage(fondo);
-    escena2.addImage(fondo);
-    escena2.mirrorX(-1);
+    arbustosImg.resize(width, height);
+    for (let i = 0; i < 2; i++) {
+        const x = width * i + width / 2;
+        const f = createSprite(x, height / 2);
+        f.addImage(fondo);
+        f.depth = 1;
+        if (i === 1) {
+            f.mirrorX(-1);
+        }
+        fondos.push(f);
+
+        const a = createSprite(x, height / 2);
+        a.addImage(arbustosImg);
+        a.depth = 3;
+        if (i === 1) {
+            a.mirrorX(-1);
+        }
+        arbustos.push(a);
+    }
+
     bordes = createEdgeSprites();
     bob = createSprite(400, height * 0.80);
     bob.saltando = false;
@@ -51,12 +69,6 @@ function setup() {
     bob.addAnimation("saltar", bob_salta);
     //bob.addAnimation("atacar", bob_atacando);
     bob.addAnimation("gameover", bob_gameover);
-    arbustosImg.resize(width, height);
-    escena1_a = createSprite(width * 0.5, height / 2, width, height);
-    escena2_a = createSprite(width * 1.5, height / 2, width, height);
-    escena1_a.addImage(arbustosImg);
-    escena2_a.addImage(arbustosImg);
-    escena2_a.mirrorX(-1);
     suelo = createSprite(width * 0.5, height * 0.9, width, 10);
     suelo.visible = false;
     bob.debug = 0;
@@ -72,7 +84,7 @@ function setup() {
     for (let num_islas = 0; num_islas <= 4; num_islas++) {
         xrandom = random(width, width * 2)
         plataforma = createSprite(xrandom, random(height * 0.5, height * 0.75))
-        plataforma.distancia = escena2.x - xrandom;
+        //plataforma.distancia = escena2.x - xrandom;
         plataforma.addAnimation("isla", islas_img)
         plataforma.debug = 0
         plataforma.depth = 6
@@ -83,6 +95,7 @@ function setup() {
                    curacion.addImage(curacion_img)
                }*/
     }
+    bob.depth=2;
 }
 function draw() {
     if (game_status == 1 && !musica.isPlaying() && noMusic == false) {
@@ -109,10 +122,8 @@ function draw() {
         }
         if (keyDown(RIGHT_ARROW)) {
             if (game_status == 1 && bob.x >= width * 0.5) {
-                moverEscena(escena1)
-                moverEscena(escena2)
-                moverEscena(escena1_a)
-                moverEscena(escena2_a)
+                moverEscena(fondos)
+                moverEscena(arbustos)
                 //moverEscena(islas_grupo)
                 enemigos_grupo.forEach(enemigo => {
                     if (!enemigo.tipo == "avion_rob" && enemigo.velocityX < 0) {
@@ -139,10 +150,6 @@ function draw() {
         }
         if (!keyIsDown(LEFT_ARROW) && !keyIsDown(RIGHT_ARROW) && !bob.saltando && !bob.atacando) {
             bob.changeAnimation("quieto");
-            escena1.velocityX = 0;
-            escena2.velocityX = 0;
-            escena1_a.velocityX = 0;
-            escena2_a.velocityX = 0;
         }
         /*if (keyWentDown("z") && !bob.atacando) {
             bob.atacando = true
@@ -158,33 +165,23 @@ function draw() {
         aterrizar()
     }
     else {
-        escena1.velocityX = 0
-
-        escena2.velocityX = 0
-
-        escena1_a.velocityX = 0
-
-        escena2_a.velocityX = 0
         enemigos_grupo.setVelocityXEach = 0
     }
 }
-function moverEscena(imagen) {
-    imagen.velocityX = -5;
-    if (imagen.x <= -width * 0.5) {
-        imagen.x = width * 1.5;
+function moverEscena(objeto) {
+    if (objeto.length < 2) return;
+    objeto.forEach(f => (f.position.x -= scrollSpeed));
+    primero = objeto[0];
+    segundo = objeto[1];
+    if(primero.position.x <= -width/2){
+        primero.position.x = segundo.position.x + width;
+        objeto.push(objeto.shift())
     }
-    if (imagen[0]) {
-        islas_grupo.forEach(element => {
-            element.x -= 5
-            if (element.x <= -width * 0.5) {
-                element.x = width * 1.5;
-            }
-        });
-    }
+    
 }
 function moverIslas() {
     islas_grupo.forEach(isla => {
-        isla.x = escena2.x - isla.distancia
+        //isla.x = escena2.x - isla.distancia
     })
 }
 function perderVida() {
@@ -264,7 +261,7 @@ function aterrizar_boss() {
 function createEnemies() {
     if (game_status === 1 && frameCount % 55 == 0) {
         enemigo = createSprite(random(width * 0.85, width * 2.5), height * 0.85, 50, 50)
-        enemigo.depth = 7
+        enemigo.depth = 2
         tipo = random(enemigos_lista)
         enemigo.scale = 2
         enemigo.velocityX = random(-5, -10);
