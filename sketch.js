@@ -10,6 +10,10 @@ var perdiste = false;
 var fondos = [];
 var arbustos = [];
 var scrollSpeed = 5;
+var tiempoTranscurrido = 0
+var bossActivo = false;
+var bossEnPantalla = false;
+var escenarioDetenido = false;
 function preload() {
     bob_caminando = loadAnimation("./sprites/sprite_00.png", "./sprites/sprite_01.png", "./sprites/sprite_02.png", "./sprites/sprite_03.png", "./sprites/sprite_04.png", "./sprites/sprite_05.png", "./sprites/sprite_06.png", "./sprites/sprite_07.png", "./sprites/sprite_08.png", "./sprites/sprite_09.png", "./sprites/sprite_10.png", "./sprites/sprite_11.png", "./sprites/sprite_12.png", "./sprites/sprite_13.png", "./sprites/sprite_14.png", "./sprites/sprite_15.png", "./sprites/sprite_16.png", "./sprites/sprite_17.png", "./sprites/sprite_18.png", "./sprites/sprite_19.png");
     bob_quieto = loadAnimation("./sprites/sprite_00.png", "./sprites/sprite_01.png", "./sprites/sprite_02.png", "./sprites/sprite_03.png", "./sprites/sprite_04.png", "./sprites/sprite_05.png");
@@ -104,6 +108,24 @@ function draw() {
     }
     drawSprites()
     createEnemies()
+    if(tiempoTranscurrido > 1000 && !bossActivo){
+        bossActivo = true
+        crearBoss()
+    }
+    if (bossActivo && boss) {
+        if (boss.position.x <= width - boss.width / 2 && !bossEnPantalla) {
+            boss.velocity.x = 0;
+            bossEnPantalla = true;
+        }
+        if (bossEnPantalla) {
+            fondos.forEach(f => f.velocity.x = 0);
+            arbustos.forEach(a => a.velocity.x = 0);
+            islas_grupo.forEach(i => i.velocity.x = 0);
+            escenarioDetenido = true;
+        } else {
+            escenarioDetenido = false;
+        }
+    }
     enemigos_grupo.collide(suelo, explotar);
     bob.collide(suelo, dejardesaltar);
     bob.collide(bordes);
@@ -121,6 +143,7 @@ function draw() {
             }
         }
         if (keyDown(RIGHT_ARROW)) {
+            tiempoTranscurrido++
             if (game_status == 1 && bob.x >= width * 0.5) {
                 moverEscena(fondos)
                 moverEscena(arbustos)
@@ -169,6 +192,7 @@ function draw() {
     }
 }
 function moverEscena(objeto) {
+    if (escenarioDetenido) return;
     if (objeto.length < 2) return;
     objeto.forEach(f => (f.position.x -= scrollSpeed));
     primero = objeto[0];
@@ -333,3 +357,12 @@ function cerrarCreditos() {
     menu.show();
     document.getElementById("info").style.display = "none"
 }
+function crearBoss(){
+    boss = createSprite(width + 200, height*0.6)
+    boss.addAnimation("caminar", bosstierra_caminando)
+    boss.scale = 4.5
+    boss.velocityX = -3
+    boss.depth = 2
+}
+
+    // function bazooca() {
