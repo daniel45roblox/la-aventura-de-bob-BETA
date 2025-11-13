@@ -38,7 +38,7 @@ function preload() {
     btnSkinsImg = loadImage("./sprites/btnSkins.png");
     btnSponsorImg = loadImage("./sprites/btnSponsor.png");
     musica = loadSound("musica.mp3")
-
+    aceituna = loadImage("./sprites/aceituna/sprite_aceituna.png")
 }
 function setup() {
     createCanvas(windowWidth, windowHeight)
@@ -122,6 +122,9 @@ function draw() {
             arbustos.forEach(a => a.velocity.x = 0);
             islas_grupo.forEach(i => i.velocity.x = 0);
             escenarioDetenido = true;
+            baz = createSprite(width *0.5, height*0.6)
+            baz.addImage(aceituna)
+            baz.depth = 3
         } else {
             escenarioDetenido = false;
         }
