@@ -19,7 +19,7 @@ function preload() {
     bob_quieto = loadAnimation("./sprites/sprite_00.png", "./sprites/sprite_01.png", "./sprites/sprite_02.png", "./sprites/sprite_03.png", "./sprites/sprite_04.png", "./sprites/sprite_05.png");
     bob_corre = loadAnimation("./sprites/sprite_18.png", "./sprites/sprite_19.png")
     bob_salta = loadAnimation("./sprites/BOB saltando 0.png", "./sprites/BOB saltando 1.png", "sprites/BOB saltando 2.png", "./sprites/BOB saltando 3.png", "./sprites/BOB saltando 4.png")
-    //bob_atacando = loadAnimation("./sprites/BOB ATACANDO00.png", "./sprites/BOB ATACANDO01.png", "./sprites/BOB ATACANDO02.png", "./sprites/BOB ATACANDO03.png", "./sprites/BOB ATACANDO04.png", "./sprites/BOB ATACANDO05.png", "./sprites/BOB ATACANDO05.png", "./sprites/BOB ATACANDO06.png", "./sprites/BOB ATACANDO06.png", "./sprites/BOB ATACANDO06.png", "./sprites/BOB ATACANDO06.png", "./sprites/BOB ATACANDO07.png", "./sprites/BOB ATACANDO08.png", "./sprites/BOB ATACANDO08.png", "./sprites/BOB ATACANDO08.png", "./sprites/BOB ATACANDO09.png", "./sprites/BOB ATACANDO10.png", "./sprites/BOB ATACANDO11.png", "./sprites/BOB ATACANDO12.png");
+    bob_atacando = loadAnimation("sprites/BOB basucazo/sprite_00.png", "sprites/BOB basucazo/sprite_01.png", "sprites/BOB basucazo/sprite_02.png", "sprites/BOB basucazo/sprite_03.png", "sprites/BOB basucazo/sprite_04.png", "sprites/BOB basucazo/sprite_05.png");
     bob_gameover = loadAnimation("./sprites/game oVer00.png", "./sprites/game oVer01.png", "./sprites/game oVer02.png", "./sprites/game oVer03.png", "./sprites/game oVer04.png", "./sprites/game oVer05.png", "./sprites/game oVer06.png", "./sprites/game oVer07.png", "./sprites/game oVer08.png", "./sprites/game oVer09.png", "./sprites/game oVer10.png", "./sprites/game oVer11.png");
     fondo = loadImage("backgroundforest.jpg");
     arbustosImg = loadImage("./sprites/backgroundarbustos.png");
@@ -80,6 +80,7 @@ function setup() {
     boss_tierra_grupo = new Group()
     enemigos_grupo = new Group()
     vidas = new Group()
+    balas_grupo = new Group()
     for (let i = 0; i < corazones; i++) {
         crearCorazon(i)
     }
@@ -125,6 +126,7 @@ function draw() {
             baz = createSprite(width *0.5, height*0.6)
             baz.addImage(aceituna)
             baz.depth = 3
+            baz.scale = 2.5
         } else {
             escenarioDetenido = false;
         }
@@ -150,6 +152,7 @@ function draw() {
             if (game_status == 1 && bob.x >= width * 0.5) {
                 moverEscena(fondos)
                 moverEscena(arbustos)
+                moverExplosiones()
                 //moverEscena(islas_grupo)
                 enemigos_grupo.forEach(enemigo => {
                     if (!enemigo.tipo == "avion_rob" && enemigo.velocityX < 0) {
@@ -177,21 +180,30 @@ function draw() {
         if (!keyIsDown(LEFT_ARROW) && !keyIsDown(RIGHT_ARROW) && !bob.saltando && !bob.atacando) {
             bob.changeAnimation("quieto");
         }
-        /*if (keyWentDown("z") && !bob.atacando) {
+        if (keyWentDown("z") && !bob.atacando) {
+            bazooca()
             bob.atacando = true
             bob.changeAnimation("atacar");
             bob.animation.changeFrame(0)
-        }*/
+        }
         if (bob.getAnimationLabel() == "atacar" && bob.animation.getFrame() == bob.animation.getLastFrame()) {
             bob.atacando = false
             bob.saltando = false;
-
         }
         moverIslas()
         aterrizar()
     }
     else {
         enemigos_grupo.setVelocityXEach = 0
+    }
+}
+function moverExplosiones(){
+    if (!escenarioDetenido){
+        enemigos_grupo.forEach(enemy => {
+           if(enemy.explotando) {
+            enemy.position.x-=scrollSpeed
+           }
+        });
     }
 }
 function moverEscena(objeto) {
@@ -354,6 +366,7 @@ function explotar(enemigo, suelo) {
         enemigo.velocityX = 0
         enemigo.lifetime = 40
         enemigo.depth = 10
+        enemigo.explotando=true
     }
 }
 function cerrarCreditos() {
@@ -367,5 +380,13 @@ function crearBoss(){
     boss.velocityX = -3
     boss.depth = 2
 }
-
-    // function bazooca() {
+function bazooca() {
+    bala = createSprite(bob.x, bob.y, -20, 20, 5)
+    if (bob.mirrorX() === 1) {
+        bala.velocity.x = 20;
+    }else {
+        bala.velocity.x = -20;
+    }
+    bala.life = 60
+    balas_grupo.add(bala)
+}
